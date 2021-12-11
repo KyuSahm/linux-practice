@@ -79,3 +79,82 @@ There are advantages to using ``bash`` as well. Its features make programming mo
     - 모든 프로세스들의 조상 프로세스
   - Step 07: ``/sbin/init`` 프로세스를 기준으로 기타 수행에 필요한 프로세스를 동작시킴
     - GUI와 관련된 프로세스도 기동해서 바탕화면이 보임
+## Linux 명령어
+### 명령어 도움말
+  - 페이지 이동 방법
+    - 이전 페이지 : page up 키 or b
+    - 다음 페이지 : page down 키 or 스페이스바
+    - 종료 : q
+```bash
+$ man 명령어
+```
+### nslookup
+- 원하는 도메인의 ip 확인
+```bash
+$man nslookup    
+NAME
+       nslookup - query Internet name servers interactively
+
+SYNOPSIS
+       nslookup [-option] [name | -] [server]
+
+DESCRIPTION
+       Nslookup is a program to query Internet domain name servers.  Nslookup has two modes: interactive and non-interactive. Interactive mode allows the user to query name servers for
+       information about various hosts and domains or to print a list of hosts in a domain. Non-interactive mode is used to print just the name and requested information for a host or
+       domain.
+```
+- 사용예
+```bash
+gusami@master:~$nslookup www.daum.net
+Server:		127.0.0.53
+Address:	127.0.0.53#53
+
+Non-authoritative answer:
+www.daum.net	canonical name = www-daum-uj2suuqw.kgslb.com.
+Name:	www-daum-uj2suuqw.kgslb.com
+Address: 211.249.220.24
+```
+### tee
+- 표준 입력에서 읽어서 표준 출력과 파일에 쓰는 명령어
+```bash
+$man tee
+NAME
+       tee - read from standard input and write to standard output and files
+
+SYNOPSIS
+       tee [OPTION]... [FILE]...
+
+DESCRIPTION
+       Copy standard input to each FILE, and also to standard output.
+
+       -a, --append
+              append to the given FILEs, do not overwrite
+
+       -i, --ignore-interrupts
+              ignore interrupt signals
+
+       -p     diagnose errors writing to non pipes
+
+       --output-error[=MODE]
+              set behavior on write error.  See MODE below
+
+       --help display this help and exit
+
+       --version
+              output version information and exit
+```
+- 사용예 1: 파일 생성
+```bash
+gusami@master:~$echo "hello" | tee hello.txt
+hello
+gusami@master:~$cat hello.txt
+hello
+```
+- 사용예 2: 파일에 첨부하기
+```bash
+gusami@master:~$ echo "hello world" | tee -a hello.txt
+hello world
+gusami@master:~$ cat hello.txt
+hello
+hello world
+```
