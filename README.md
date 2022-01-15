@@ -271,3 +271,235 @@ gusami@master:~$ cat hello.txt
 hello
 hello world
 ```
+### df
+- 마운트 된 파일 시스템 별로 disk 사용량을 모니터링 할 때 사용
+  - ``-h``: print sizes in human readable format (e.g., 1K 234M 2G)
+```bash
+DF(1)                                                        User Commands                                                       DF(1)
+
+NAME
+       df - report file system disk space usage
+
+SYNOPSIS
+       df [OPTION]... [FILE]...
+
+DESCRIPTION
+       This manual page documents the GNU version of df.  df displays the amount of disk space available on the file system containing
+       each file name argument.  If no file name is given, the space available on all currently mounted file systems is  shown.   Disk
+       space  is  shown in 1K blocks by default, unless the environment variable POSIXLY_CORRECT is set, in which case 512-byte blocks
+       are used.
+
+       If an argument is the absolute file name of a disk device node containing a mounted file system, df shows the  space  available
+       on that file system rather than on the file system containing the device node.  This version of df cannot show the space avail‐
+       able on unmounted file systems, because on most kinds of systems doing so requires very nonportable intimate knowledge of  file
+       system structures.
+
+OPTIONS
+       Show information about the file system on which each FILE resides, or all file systems by default.
+
+       Mandatory arguments to long options are mandatory for short options too.
+
+       -a, --all
+              include pseudo, duplicate, inaccessible file systems
+
+       -B, --block-size=SIZE
+              scale sizes by SIZE before printing them; e.g., '-BM' prints sizes in units of 1,048,576 bytes; see SIZE format below
+
+       -h, --human-readable
+              print sizes in powers of 1024 (e.g., 1023M)
+
+       -H, --si
+              print sizes in powers of 1000 (e.g., 1.1G)
+
+       -i, --inodes
+              list inode information instead of block usage
+
+       -k     like --block-size=1K
+
+       -l, --local
+              limit listing to local file systems
+
+       --no-sync
+              do not invoke sync before getting usage info (default)
+
+       --output[=FIELD_LIST]
+              use the output format defined by FIELD_LIST, or print all fields if FIELD_LIST is omitted.
+
+       -P, --portability
+              use the POSIX output format
+
+       --sync invoke sync before getting usage info
+
+       --total
+              elide all entries insignificant to available space, and produce a grand total
+
+       -t, --type=TYPE
+              limit listing to file systems of type TYPE
+
+       -T, --print-type
+              print file system type
+
+       -x, --exclude-type=TYPE
+              limit listing to file systems not of type TYPE
+
+       -v     (ignored)
+
+       --help display this help and exit
+
+       --version
+              output version information and exit
+
+       Display  values are in units of the first available SIZE from --block-size, and the DF_BLOCK_SIZE, BLOCK_SIZE and BLOCKSIZE en‐
+       vironment variables.  Otherwise, units default to 1024 bytes (or 512 if POSIXLY_CORRECT is set).
+
+       The SIZE argument is an integer and optional unit (example: 10K is 10*1024).  Units are K,M,G,T,P,E,Z,Y  (powers  of  1024)  or
+       KB,MB,... (powers of 1000).
+
+       FIELD_LIST  is a comma-separated list of columns to be included.  Valid field names are: 'source', 'fstype', 'itotal', 'iused',
+       'iavail', 'ipcent', 'size', 'used', 'avail', 'pcent', 'file' and 'target' (see info page).
+```
+- 사용예 1: Root file system 디스크 용량 확인  
+```bash
+gusami@docker-ubuntu:~$df -h /
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda5        20G   12G  7.1G  62% /
+```
+- 사용예 2: 전체 파일 시스템 디스크 용량 확인
+```bash
+gusami@docker-ubuntu:~$df -h
+Filesystem      Size  Used Avail Use% Mounted on
+udev            1.9G     0  1.9G   0% /dev
+tmpfs           393M  1.2M  392M   1% /run
+/dev/sda5        20G   12G  7.1G  62% /
+tmpfs           2.0G     0  2.0G   0% /dev/shm
+tmpfs           5.0M  4.0K  5.0M   1% /run/lock
+tmpfs           2.0G     0  2.0G   0% /sys/fs/cgroup
+/dev/loop0       56M   56M     0 100% /snap/core18/2284
+/dev/loop1      219M  219M     0 100% /snap/gnome-3-34-1804/72
+/dev/loop2       66M   66M     0 100% /snap/gtk-common-themes/1515
+/dev/loop3      248M  248M     0 100% /snap/gnome-3-38-2004/87
+/dev/loop4       55M   55M     0 100% /snap/snap-store/558
+/dev/loop5       66M   66M     0 100% /snap/gtk-common-themes/1519
+/dev/loop6       44M   44M     0 100% /snap/snapd/14295
+/dev/loop7       33M   33M     0 100% /snap/snapd/12704
+/dev/loop8      128K  128K     0 100% /snap/bare/5
+/dev/loop9       62M   62M     0 100% /snap/core20/1270
+/dev/loop10      51M   51M     0 100% /snap/snap-store/547
+/dev/loop11      56M   56M     0 100% /snap/core18/2253
+/dev/loop12     219M  219M     0 100% /snap/gnome-3-34-1804/77
+/dev/sda1       511M  4.0K  511M   1% /boot/efi
+tmpfs           393M  8.0K  393M   1% /run/user/1000
+```
+### du
+- 디렉토리 별로 disk 사용량을 모니터링 할 때 사용
+```bash
+DU(1)                                                        User Commands                                                       DU(1)
+
+NAME
+       du - estimate file space usage
+
+SYNOPSIS
+       du [OPTION]... [FILE]...
+       du [OPTION]... --files0-from=F
+
+DESCRIPTION
+       Summarize disk usage of the set of FILEs, recursively for directories.
+
+       Mandatory arguments to long options are mandatory for short options too.
+
+       -0, --null
+              end each output line with NUL, not newline
+
+       -a, --all
+              write counts for all files, not just directories
+
+       --apparent-size
+              print  apparent  sizes,  rather  than disk usage; although the apparent size is usually smaller, it may be larger due to
+              holes in ('sparse') files, internal fragmentation, indirect blocks, and the like
+
+       -B, --block-size=SIZE
+              scale sizes by SIZE before printing them; e.g., '-BM' prints sizes in units of 1,048,576 bytes; see SIZE format below
+
+       -b, --bytes
+              equivalent to '--apparent-size --block-size=1'
+
+       -c, --total
+              produce a grand total
+
+       -D, --dereference-args
+              dereference only symlinks that are listed on the command line
+
+       -d, --max-depth=N
+              print the total for a directory (or file, with --all) only if it is N or fewer levels below the command  line  argument;
+              --max-depth=0 is the same as --summarize
+
+       --files0-from=F
+              summarize  disk usage of the NUL-terminated file names specified in file F; if F is -, then read names from standard in‐
+              put
+
+       -H     equivalent to --dereference-args (-D)
+
+       -h, --human-readable
+              print sizes in human readable format (e.g., 1K 234M 2G)
+
+       --inodes
+              list inode usage information instead of block usage
+
+       -k     like --block-size=1K
+
+       -L, --dereference
+              dereference all symbolic links
+
+       -l, --count-links
+              count sizes many times if hard linked
+
+       -m     like --block-size=1M
+
+       -P, --no-dereference
+              do not follow any symbolic links (this is the default)
+
+       -S, --separate-dirs
+              for directories do not include size of subdirectories
+
+       --si   like -h, but use powers of 1000 not 1024
+
+       -s, --summarize
+              display only a total for each argument
+
+       -t, --threshold=SIZE
+              exclude entries smaller than SIZE if positive, or entries greater than SIZE if negative
+
+       --time show time of the last modification of any file in the directory, or any of its subdirectories
+
+       --time=WORD
+              show time as WORD instead of modification time: atime, access, use, ctime or status
+
+       --time-style=STYLE
+              show times using STYLE, which can be: full-iso, long-iso, iso, or +FORMAT; FORMAT is interpreted like in 'date'
+
+       -X, --exclude-from=FILE
+              exclude files that match any pattern in FILE
+
+       --exclude=PATTERN
+              exclude files that match PATTERN
+
+       -x, --one-file-system
+              skip directories on different file systems
+
+       --help display this help and exit
+
+       --version
+              output version information and exit
+
+       Display values are in units of the first available SIZE from --block-size, and the DU_BLOCK_SIZE, BLOCK_SIZE and BLOCKSIZE  en‐
+       vironment variables.  Otherwise, units default to 1024 bytes (or 512 if POSIXLY_CORRECT is set).
+
+       The  SIZE  argument  is  an integer and optional unit (example: 10K is 10*1024).  Units are K,M,G,T,P,E,Z,Y (powers of 1024) or
+       KB,MB,... (powers of 1000).
+```
+- 사용예 1: Root directory 아래의 모든 디렉토리의 디스크 용량 확인
+  - ``-h``: print sizes in human readable format (e.g., 1K 234M 2G)
+```bash
+gusami@docker-ubuntu:~$ du -h /
+```
+
