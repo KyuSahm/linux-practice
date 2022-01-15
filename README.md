@@ -502,4 +502,56 @@ DESCRIPTION
 ```bash
 gusami@docker-ubuntu:~$ du -h /
 ```
-
+### iptables
+- 참고 자료: https://server-talk.tistory.com/169
+- CentOS에는 패킷을 필터링 기능을 가지고 있는 netfiler가 존재합니다 IPTABLES는 netfilter를 관리하기 위한 툴
+#### iptables란?
+- Netfilter 프로젝트에서 개발되었으며 2.4.x 커널 배포 시점 부터 리눅스 일부분으로 제공
+- Netfilter에서 제공하는 프레임 워크를 이용한 패킷에 대한 연산(필터링 등)을 수행하게 설계된 함수를 네트워크 스택으로 후킹하는데 사용하는 명령어
+- iptables 정책은 정렬된 규칙집합으로 생성
+  - 규칙은 특정 분류의 패킷에 대해 취해야 조치를 커널에 알려주며 하나의 iptables의 규칙은 테이블 내에 있는 하나의 체인에 적용
+#### iptables 기능
+- 상태 추적 기능
+  - 방화벽을 지나가는 모든 패킷에 대한 상태를 추적하여 메모리에 기억 기능
+  - 기존의 연결을 가정하여 접근할 경우 메모리에 저장된 목록과 비교하여 차단시키는 지능화된 공격 차단 기능
+  - 특정 패킷을 차단 또는 허용하는 기능, 서버의 접근제어, 방화벽기능 구현 기능
+- 향상된 매칭 기능
+  - 방화벽의 기본적인 매칭 정보인 패킷의 IP주소와 포트 번호 뿐만아니라 다양한 매칭 기능
+  - 현재의 연결 상태, 포트 목록, 하드웨어 MAC 주소, 패킷 발신자의 유저나 그룹 프로세스, IP 헤더의 TOS등 여러가지 조건을 이용한 세부적인 필터링 기능
+- 포트 포워딩 기능 내장
+  - NAT(Network Address Translation - 사설IP와 공인IP를 변환해주거나 포트 변환 ) 기능을 자체적으로 포함하고 있어 사용 가능
+  - 브리지 등의 다양한 네트워크 구조를 지원하여 원하는 방식대로 네트워크 구성이 가능  
+#### iptables의 동작 원리
+![iptables_principle](./images/iptables_principle.png)
+- PREROUTING(입력패킷) 기능을 통해 POSTROUNTING(출력 패킷)으로 진행
+  - 이과정 중 INPUT, OUTPUT, FORWARD의 대한 필터링을 거치게 되며, 이러한 패킷의 대한 필터링으로 차단/허용 가능
+- PREROUNTING
+  - 외부 네트워크에서 방화벽으로 들어올때 필터링하며 사설(내부)망으로 들어가기전이다
+- INPUT
+  - 인터페이스를 통해 로컬 프로세스로 들어오는 패킷의 처리
+  - INPUT에서 패킷 처리(차단/허용) 후 사용자에게 프로세스로 전달
+- OUTPUT
+  - 패킷이 외부로 보내지기 전에 로컬에서 생성된 네트워크 패킷 변경 방화벽 내에서 실행
+- FORWARD
+  - 다른 호스트로 통과시켜 보낼 패킷에 대한 처리(차단/허용)
+  - 방화벽이나 IPS 등과 같이 지나가는 패킷을 처리
+- POSTROUTING
+  - 방화벽에서 외부로 나갈때 필터링하며 방화벽에서 외부로 나가기 전임
+#### iptables의 Table와 Chain의 관계
+![Table_And_Chain](./images/Table_And_Chain.png)
+- IPTABLES는 필터링을 적용하는 테이블
+  - 규칙에 따라 패킷을 차단하거나 허용하는 역할
+- FILTER Table
+  - INPUT, OUTPUT, FORWORD 3개의 다음과 같이 chain이 존재
+- NAT Table
+  - 필터링기능은 없지만, NAT(주소 변환)용으로 사용
+  - 외부에서 내부로 오는 패킷 포워딩과 내부에서 외부로 나갈때 다른 IP주소로 나가게 하는게 가능
+- MAGLE Table
+  - TTL이나 TOS(type of service)같은 특수규칙을 적용하기 위해 사용
+  - 즉, 패킷안에 데이터를 변환 또는 조작을 하기 위한 테이블
+- raw Table
+  - Filter Table의 Connection Tracking 기능을 좀더 자세히 다를때 사용
+  - 특정 네트워크는 연결 추적에서 제외하는등의 추적에서 제외하는 등의 추가 설정이 가능
+  - conntrack 모듈보다 우선순위를 가짐
+- iptables에는 테이블 안에 체인들이 IP 패킷들에 대해 정해진 규칙에 따라 수행
+  - 들어오는 패킷에 대해 허용(ACCEPT), 거부(REJECT), 버림(DROP)을 결정하게 됨
