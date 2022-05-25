@@ -501,6 +501,18 @@ DESCRIPTION
   - ``-h``: print sizes in human readable format (e.g., 1K 234M 2G)
 ```bash
 gusami@docker-ubuntu:~$ du -h /
+# 현재 디렉토리를 기준으로 바로 아래 디렉토리 용량 정보
+[DevSmartworks@bastion-instance ~]$ du --max-depth=1
+6140	./.cache
+4	./.config
+12	./.ssh
+9572	./.kube
+12	./.oci
+4	./.docker
+20	./monitoring
+0	./.pki
+4	./.vim
+19128	.
 ```
 ### iptables
 - 참고 자료: https://server-talk.tistory.com/169
@@ -555,3 +567,165 @@ gusami@docker-ubuntu:~$ du -h /
   - conntrack 모듈보다 우선순위를 가짐
 - iptables에는 테이블 안에 체인들이 IP 패킷들에 대해 정해진 규칙에 따라 수행
   - 들어오는 패킷에 대해 허용(ACCEPT), 거부(REJECT), 버림(DROP)을 결정하게 됨
+
+## 방화벽 설정
+- 출처: https://archijude.tistory.com/392
+### 포트 상태 확인
+- 열려있는 모든 포트 표시
+```bash
+# -n: host명으로 표시 안함 (Show numerical addresses instead of trying to determine symbolic host, port or user names)
+# -a: 모든 소켓 표시 (Show both listening and non-listening sockets)
+# -p: 프로세스ID와 프로그램명 표시 (Show the PID and name of the program to which each socket belongs)
+$netstat -anp
+```
+- Listen 중인 포트 표시
+```bash
+$netstat -anp | grep LISTEN
+```
+- 확인하려는 포트번호 상태 확인
+```bash
+$netstat -anp | grep <port number>
+```
+- 특정 호스트 포트 상태 확인
+  - 특정 호스트로 접속이 불가할 때, ``netcat(nc)`` 네트워크 유틸리티를 이용하여 포트가 막혀 있는지 확인 가능
+  - ``netcat`` 이란?
+    - 넷캣(netcat)은 TCP, UDP 프로토콜을 사용하는 네트워크에서 네트워크 연결 상태를 읽거나 쓸때 사용하는 유틸리티 프로그램
+    - netcat 설치하기: https://zetawiki.com/wiki/%EB%A6%AC%EB%88%85%EC%8A%A4_nc
+  - 특정 포트 상태 확인
+    - ``$nc -z <host address> <host port>``
+    - ``$nc -z www.google.com 80``
+  - 특정 호스트의 포트 범위를 지정하여 열린 포트 확인
+    - ``$ nc <host address> -z <start port>-<end port>``
+    - ``$ nc 10.20.30.40 -z 19-21``
+### 포트 열기
+- 리눅스 방화벽 설정 명령어인 iptables을 사용하여 포트를 열수 있음
+#### iptables를 이용한 설정
+- 방화벽 설정 정보 확인하기
+  ``$iptables -nL``
+```bash
+$sudo iptables -nL
+[sudo] password for psw: 
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain FORWARD (policy DROP)
+target     prot opt source               destination         
+DOCKER-USER  all  --  0.0.0.0/0            0.0.0.0/0           
+DOCKER-ISOLATION-STAGE-1  all  --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
+DOCKER     all  --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
+DOCKER     all  --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
+DOCKER     all  --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
+DOCKER     all  --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
+DOCKER     all  --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain DOCKER (5 references)
+target     prot opt source               destination         
+ACCEPT     tcp  --  0.0.0.0/0            172.17.0.2           tcp dpt:3306
+ACCEPT     tcp  --  0.0.0.0/0            172.17.0.5           tcp dpt:443
+ACCEPT     tcp  --  0.0.0.0/0            172.17.0.4           tcp dpt:443
+ACCEPT     tcp  --  0.0.0.0/0            172.17.0.3           tcp dpt:8432
+ACCEPT     tcp  --  0.0.0.0/0            172.17.0.3           tcp dpt:6901
+ACCEPT     tcp  --  0.0.0.0/0            172.21.0.3           tcp dpt:443
+
+Chain DOCKER-ISOLATION-STAGE-1 (1 references)
+target     prot opt source               destination         
+DOCKER-ISOLATION-STAGE-2  all  --  0.0.0.0/0            0.0.0.0/0           
+DOCKER-ISOLATION-STAGE-2  all  --  0.0.0.0/0            0.0.0.0/0           
+DOCKER-ISOLATION-STAGE-2  all  --  0.0.0.0/0            0.0.0.0/0           
+DOCKER-ISOLATION-STAGE-2  all  --  0.0.0.0/0            0.0.0.0/0           
+DOCKER-ISOLATION-STAGE-2  all  --  0.0.0.0/0            0.0.0.0/0           
+RETURN     all  --  0.0.0.0/0            0.0.0.0/0           
+
+Chain DOCKER-ISOLATION-STAGE-2 (5 references)
+target     prot opt source               destination         
+DROP       all  --  0.0.0.0/0            0.0.0.0/0           
+DROP       all  --  0.0.0.0/0            0.0.0.0/0           
+DROP       all  --  0.0.0.0/0            0.0.0.0/0           
+DROP       all  --  0.0.0.0/0            0.0.0.0/0           
+DROP       all  --  0.0.0.0/0            0.0.0.0/0           
+RETURN     all  --  0.0.0.0/0            0.0.0.0/0           
+
+Chain DOCKER-USER (1 references)
+target     prot opt source               destination         
+RETURN     all  --  0.0.0.0/0            0.0.0.0/0 
+```
+- iptables 명령어 옵션
+  - ``-I <chain> [rulenum] <rule-specification>``: 새로운 규칙을 추가    
+    - Insert one or more rules in the selected chain as the given rule number.  So, if the rule number is 1, the rule or rules are inserted at the head of the chain. This is also the default if no rule number is specified
+  - ``-D <chain> [rulenum]`` or ``-D <chain> <rule-specification> ``: 기존의 규칙을 삭제
+    - Delete one or more rules from the selected chain.  There are two versions of this command: the rule can be specified as a number in the chain  (starting  at  1 for the first rule) or a rule to match
+  - ``-p``: 패킷의 프로토콜을 명시
+  - ``-j``: 규칙에 해당되는 패킷을 어떻게 처리할지를 결정
+- 특정포트로 외부에서 접속할 수 있도록 열기 (외부에서 접속할 수 있도록 포트 OPEN)
+  - 아래는 외부에서 들어오는(INBOUND) TCP포트 12345의 연결을 받아들인다는 규칙을 1번 방화벽 규칙으로 추가한다는 의미
+  - TCP PORT일 경우
+    - ``$iptables -I INPUT 1 -p tcp --dport 12345 -j ACCEPT``
+  - UDP PORT일 경우
+    - ``$iptables -I INPUT 1 -p udp --dport 12345 -j ACCEPT``
+- 특정포트로 외부로 나갈 수 있도록 포트 열기
+  - TCP PORT일 경우
+    - ``$iptables -I OUTPUT 1 -p tcp --dport 9002 -j ACCEPT``
+  - UDP PORT일 경우
+    - ``$iptables -I OUTPUT 1 -p udp --dport 9002 -j ACCEPT``
+- 추가한 설정 조회
+  - ``$iptables -L -v``
+  - ``-L``: 규칙을 출력
+  - ``-v``: 자세히
+- 추가한 설정 삭제하는 방법
+  - 방법1: 추가한 규칙의 번호로 삭제하는 방법
+    - ``$iptables -D INPUT 1``
+  - 방법2: 추가했을 때의 명령어에서 "-I"를 "-D"로 바꾸어 주는 방법
+    - ``$iptables -D INPUT -p tcp --dport 12345 -j ACCEPT``
+    - ``$iptables -D INPUT -p udp --dport 12345 -j ACCEPT``
+- 변경사항을 저장하는 방법
+  - ``$service iptables save``
+  - ``$/etc/init.d/iptables restart``
+- 방화벽 활성화 및 비활성화
+  - 활성화
+    - ``$/etc/init.d/iptables start``
+  - 비활성화
+    - ``/etc/init.d/iptables stop``
+#### firewalld를 사용한 설정
+- firewalld 의 필요성
+  - 기존 iptables의 한계
+    - 룰 변경시 서비스 중지 및 설정 변경
+    - 오픈스택이나 KVM과 같은 가상화 호스트에서는 네트워크 변 화가 수시로 발생되므로 필터링 정책에 변경이 필요
+    - 응용프로그램 자체에서 필터링 정책을 구성하는 경우 iptables 정책과 충돌되는 등의 문제 야기
+  - firewalld가 필요한 이유?
+    - KVM , openstack 과 같은 가상화, 클라우드 환경하에서의 필 터링 정책 동적 추가 가능
+    - DBUS API를 통한 정보 공유를 통해 정책 충돌 문제 해결
+  - DBUS란?
+    - 어플리케이션간의 통신을 지원하는 인터페이스
+- firewalld vs iptables
+  - https://blog.asamaru.net/2015/10/16/centos-7-firewalld/    
+```bash
+[root@te-kafka ~]# iptables -nL | grep 9092
+ACCEPT     tcp  --  0.0.0.0/0            0.0.0.0/0            tcp dpt:9092 ctstate NEW,UNTRACKED
+[root@te-kafka ~]# firewall-cmd --permanent --zone=public --add-port=9093/tcp
+success
+[root@te-kafka ~]# firewall-cmd --reload
+success
+[root@te-kafka ~]# firewall-cmd --permanent --zone=public --add-port=2182/tcp
+success
+[root@te-kafka ~]# firewall-cmd --reload
+success
+[root@te-kafka ~]#
+```      
