@@ -728,4 +728,26 @@ success
 [root@te-kafka ~]# firewall-cmd --reload
 success
 [root@te-kafka ~]#
-```      
+```
+## xclip 프로그램
+- 파일에 있던 내용을 복사하는 경우 마우스로 드래그하고 복사할 수 있지만, 잘못 복사하는 경우를 방지하거나 자동화하고 싶은 경우에 xclip 명령어를 사용
+- 설치
+```bash
+sudo apt update
+sudo apt install -y xclip
+```
+- 시나리오 1: 파일의 내용을 클립보드에 저장하는 방법
+```bash
+$xclip -sel clip < 파일명
+$xclip -sel clip < ~/.ssh/id_rsa.pub
+```
+- 시나리오 2: 명령어 결과를 클립보드에 저장하는 방법
+```bash
+$명령어 | xclip -sel clip
+$tail -n 30 /var/log/syslog | xclip -sel clip
+```
+- 시나리오 3: 현재 클립보드의 내용을 저장하고 싶은 경우
+```bash
+xclip -o -sel clip > 파일명
+xclip -o -sel clip > config
+```
