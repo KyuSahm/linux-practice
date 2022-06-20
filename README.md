@@ -751,3 +751,23 @@ $tail -n 30 /var/log/syslog | xclip -sel clip
 xclip -o -sel clip > 파일명
 xclip -o -sel clip > config
 ```
+## How to Bring Background Process to Foreground in Linux
+- Backgound로 프로세스 동작시키기
+```bash
+$ vi &
+$ crontab &
+$ jobs
+[1]-  Running                 vi &
+[2]+  Running                 crontab &
+```
+- Bring last background process to foreground
+  - If you run fg command without any options or arguments then it will bring back the last process that was pushed to background.
+```bash
+$ fg
+```
+- Bring specific process to foreground
+  - If you want to bring a specific process to foreground, then mention its job id after fg command. Here is an example to bring the first process, that is, job id 1, to foreground.
+```bash
+$ fg 1
+```
+
