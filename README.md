@@ -770,4 +770,28 @@ $ fg
 ```bash
 $ fg 1
 ```
-
+## 압축 및 압축 해제 명령어
+- tar 파일 압축
+  - ``tar -cvf [압축파일명] [압축할 파일 혹은 폴더 경로]``
+```bash
+# 현재 디렉토리의 data 디렉토리 전체를 data.tar 파일로 압축
+$tar -cvf data.tar data/
+```
+- tar 파일 해제
+  - ``tar -xvf [압축파일명]``
+```bash
+# 현재 디렉토리에 압축 파일을 해제
+$tar -xvf data.tar
+```
+- tar.gz 파일 압축
+  - ``tar -zcvf [압축파일명] [압축할 파일 혹은 폴더 경로]``
+```bash
+# 현재 디렉토리의 data 디렉토리 전체를 data.tar 파일로 압축
+$tar -zcvf data.tar.gz data/
+```
+- tar.gz 파일 해제
+  - ``tar -zxvf [압축파일명]``
+```bash
+# 현재 디렉토리에 압축 파일을 해제
+$tar -zxvf data.tar.gz
+```
